@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlumberSpace — Your Calming Nighttime Companion</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body data-theme="moonlight" data-accent="amber">
+
+    <!-- Ambient background glow elements -->
+    <div class="ambient-glow glow-top" aria-hidden="true"></div>
+    <div class="ambient-glow glow-bottom" aria-hidden="true"></div>
+
+    <main class="app-container">
+
+        <!-- ================= 1. ONBOARDING QUESTIONNAIRE VIEW ================= -->
+        <section id="questionnaire-view" class="view active" aria-labelledby="quiz-heading">
+            <header class="header">
+                <div class="moon-badge">🌙 SlumberSpace</div>
+                <h1 id="quiz-heading">Let's Make Tonight a Little Easier</h1>
+                <p class="subtitle">Answer a few questions so we can build a realistic, gentle nighttime routine for your college life.</p>
+                
+                <div class="progress-wrapper">
+                    <div class="progress-bar-container" role="progressbar" id="progress-bar-elem" aria-valuemin="1" aria-valuemax="24" aria-valuenow="1">
+                        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">Question 1 of 24</span>
+                </div>
+            </header>
+
+            <div class="card quiz-card">
+                <!-- Single-Question Container Dynamic Injection -->
+                <div id="question-card-container" class="question-container" aria-live="polite">
+                    <!-- Dynamic question content injected by app.js -->
+                </div>
+
+                <div class="quiz-nav-actions">
+                    <button type="button" id="prev-q-btn" class="btn btn-secondary" disabled>&larr; Previous</button>
+                    <button type="button" id="next-q-btn" class="btn btn-primary">Next Question &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 2. PACED TRANSITION / GENERATION VIEW ================= -->
+        <section id="transition-view" class="view" aria-live="polite">
+            <div class="loading-content">
+                <div class="breathing-orb" aria-hidden="true"></div>
+                <h2 id="transition-heading">Let's find a rhythm that fits your life.</h2>
+                <p id="transition-status" class="loading-subtitle">Looking at your sleep patterns…</p>
+                <div class="loading-dots" aria-hidden="true">
+                    <span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= 3. SCHEDULE DASHBOARD VIEW ================= -->
+        <section id="schedule-view" class="view" aria-labelledby="schedule-heading">
+            
+            <!-- Customizable Banner Header -->
+            <div id="schedule-banner" class="schedule-banner">
+                <div class="banner-overlay">
+                    <span class="banner-tag">Tonight's Wind-Down</span>
+                    <h1 id="schedule-heading">My Nighttime Rhythm</h1>
+                    <p id="banner-sub">Small steps bring consistent rest. You don't have to be perfect tonight.</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Controls & Theme Customization Bar -->
+            <div class="card toolbar-card">
+                <div class="toolbar-header">
+                    <h2>🎨 Personalize Your Experience</h2>
+                    <button id="toggle-toolbar-btn" class="btn btn-ghost btn-sm" aria-expanded="false">Customize Theme & Layout</button>
+                </div>
+                
+                <div id="toolbar-body" class="toolbar-body hidden">
+                    <div class="toolbar-grid">
+                        <div class="toolbar-item">
+                            <label for="theme-select">Visual Theme:</label>
+                            <select id="theme-select" class="input-field input-sm">
+                                <option value="moonlight">🌌 Moonlight</option>
+                                <option value="forest">🌲 Forest Dusk</option>
+                                <option value="warm-cream">🕯️ Warm Cream</option>
+                                <option value="mist">🌫️ Gentle Mist</option>
+                                <option value="evening-blue">🌃 Evening Blue</option>
+                            </select>
+                        </div>
+
+                        <div class="toolbar-item">
+                            <label>Accent Tone:</label>
+                            <div class="color-palette" role="radiogroup" aria-label="Accent Color">
+                                <button type="button" class="color-dot dot-amber active" data-color="amber" title="Amber Gold" aria-label="Amber Tone"></button>
+                                <button type="button" class="color-dot dot-lavender" data-color="lavender" title="Lavender Twilight" aria-label="Lavender Tone"></button>
+                                <button type="button" class="color-dot dot-emerald" data-color="emerald" title="Emerald Mint" aria-label="Emerald Tone"></button>
+                                <button type="button" class="color-dot dot-rose" data-color="rose" title="Rose Quartz" aria-label="Rose Tone"></button>
+                            </div>
+                        </div>
+
+                        <div class="toolbar-item">
+                            <label for="emoji-toggle">Emojis:</label>
+                            <button type="button" id="emoji-toggle" class="btn btn-secondary btn-sm" aria-pressed="true">Show Emojis</button>
+                        </div>
+
+                        <div class="toolbar-item">
+                            <label for="routine-level-select">Routine Pace:</label>
+                            <select id="routine-level-select" class="input-field input-sm">
+                                <option value="starter">🌱 Starter (3 core steps)</option>
+                                <option value="balanced" selected>🌿 Balanced (5 steps)</option>
+                                <option value="full">🌳 Full Routine (7+ steps)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Target Metrics Summary -->
+            <div class="summary-grid">
+                <div class="card metric-card">
+                    <span class="metric-icon" aria-hidden="true">🌆</span>
+                    <div>
+                        <span class="metric-label">Wind-Down Starts</span>
+                        <h3 id="display-wind-down">10:45 PM</h3>
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <span class="metric-icon" aria-hidden="true">🛏️</span>
+                    <div>
+                        <span class="metric-label">Target Bedtime</span>
+                        <h3 id="display-bedtime">11:30 PM</h3>
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <span class="metric-icon" aria-hidden="true">☀️</span>
+                    <div>
+                        <span class="metric-label">Morning Wake-Up</span>
+                        <h3 id="display-wake-time">07:30 AM</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Timeline Schedule -->
+            <div class="card routine-card">
+                <div class="routine-header">
+                    <div>
+                        <h2>📋 Step-by-Step Schedule</h2>
+                        <p class="subtitle-sm">Edit times, rearrange steps, or check off tasks as you prepare for sleep.</p>
+                    </div>
+                </div>
+
+                <ul id="schedule-bullets" class="schedule-bullets" aria-label="Nighttime Routine Steps">
+                    <!-- Dynamic Injection by app.js -->
+                </ul>
+
+                <!-- Add Step Form -->
+                <form id="add-step-form" class="add-step-form">
+                    <select id="new-emoji-select" class="input-field input-emoji" aria-label="Choose Emoji">
+                        <option value="🌙">🌙</option>
+                        <option value="📖">📖</option>
+                        <option value="🍵">🍵</option>
+                        <option value="🧘">🧘</option>
+                        <option value="🎵">🎵</option>
+                        <option value="📝">📝</option>
+                        <option value="🚿">🚿</option>
+                        <option value="📱">📱</option>
+                    </select>
+                    <input type="time" id="new-step-time" class="input-field input-time" value="22:30" aria-label="Step Time" required>
+                    <input type="text" id="new-step-text" class="input-field input-text" placeholder="Add custom action (e.g. Set out clothes for class)..." aria-label="Step Description" required>
+                    <button type="submit" class="btn btn-primary btn-sm">+ Add Step</button>
+                </form>
+            </div>
+
+            <!-- Class & Work Schedule Upload Card -->
+            <div class="card upload-card">
+                <h3>📚 Class & Work Schedule Integration</h3>
+                <p class="subtitle-sm">Upload your course timetable or work shifts (.csv or .txt) to align bedtime with your earliest commitment.</p>
+                
+                <div class="upload-zone" id="upload-zone" tabindex="0" role="region" aria-label="File Upload Dropzone">
+                    <div class="upload-icon" aria-hidden="true">📁</div>
+                    <p><strong>Drag & drop schedule file</strong> or <label for="schedule-file" class="upload-link">browse files</label></p>
+                    <input type="file" id="schedule-file" accept=".csv,.txt" class="file-input-hidden">
+                    <span id="file-name-display" class="file-name-display">Supported formats: CSV, TXT</span>
+                </div>
+            </div>
+
+            <!-- Main Action Bar -->
+            <div class="dashboard-actions">
+                <button id="start-winddown-btn" class="btn btn-accent btn-lg">
+                    ✨ Start 5-Minute Wind-Down
+                </button>
+                <div class="secondary-actions">
+                    <button id="dev-quick-test-btn" class="btn btn-ghost btn-sm">⚡ Dev Quick-Test (5s Timer)</button>
+                    <button id="retake-quiz-btn" class="btn btn-ghost btn-sm">⚙️ Retake Questionnaire</button>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= 4. WIND-DOWN TIMER VIEW ================= -->
+        <section id="winddown-view" class="view" aria-labelledby="winddown-heading">
+            <div class="card timer-card">
+                <span class="timer-badge">Wind-Down Active</span>
+                <h1 id="winddown-heading">Settle In & Put Your Phone Down</h1>
+                <p class="subtitle">Your night is beginning. Put your phone somewhere out of reach.</p>
+
+                <div class="timer-circle-container">
+                    <div class="timer-display" id="winddown-timer-display" aria-live="off">05:00</div>
+                    <p class="timer-subtext">Sleep Mode begins when countdown ends</p>
+                </div>
+
+                <div class="breathing-prompt">
+                    <p id="breathing-text" aria-live="polite">Take a slow breath. You don't need to do anything else right now.</p>
+                </div>
+
+                <button id="cancel-winddown-btn" class="btn btn-ghost btn-sm" style="margin-top: 24px;">Cancel Wind-Down</button>
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- ================= 5. SLEEP MODE OVERLAY (FULL SCREEN) ================= -->
+    <div id="lockdown-overlay" class="lockdown-overlay" role="dialog" aria-modal="true" aria-labelledby="sleep-mode-title">
+        <div class="lockdown-content">
+            <div class="lock-icon" aria-hidden="true">🔒</div>
+            <h1 id="sleep-mode-title">Sleep Mode Active</h1>
+            <p class="lock-subtitle">SlumberSpace has entered rest mode. Focus on resting your eyes.</p>
+
+            <div class="white-noise-status">
+                <div class="sound-wave" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+                <span id="white-noise-label">🔊 Calming White Noise Playing</span>
+                <button id="toggle-sound-btn" class="btn btn-ghost btn-xs" aria-label="Mute sound">Mute</button>
+            </div>
+
+            <div class="countdown-box">
+                <span class="countdown-label">Estimated Time Until Wake-Up:</span>
+                <div id="lockdown-countdown" class="lockdown-countdown">08:00:00</div>
+            </div>
+
+            <div class="prototype-notice">
+                <p>💡 <em>Prototype Note:</em> Web security prevents locking OS/other apps. Keep this screen active for soothing sound and alarm chime.</p>
+            </div>
+
+            <button id="emergency-exit-btn" class="btn btn-secondary btn-sm" style="margin-top: 20px;">
+                Emergency Unlock
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================= 6. MORNING ALARM OVERLAY ================= -->
+    <div id="alarm-overlay" class="alarm-overlay" role="dialog" aria-modal="true" aria-labelledby="alarm-title">
+        <div class="alarm-content card">
+            <div class="alarm-sun" aria-hidden="true">☀️</div>
+            <h1 id="alarm-title">Good Morning</h1>
+            <p>Your sleep window is complete. Take a moment to stretch and start your day gently.</p>
+            <button id="stop-alarm-btn" class="btn btn-primary btn-lg" style="margin-top: 24px;">I'm Awake</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
