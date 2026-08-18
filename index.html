@@ -1,5 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+    <header>
+    <!-- Auth Container -->
+<div id="auth-container" class="auth-card">
+    <h3 id="auth-title">Log In or Sign Up</h3>
+    <input type="email" id="auth-email" placeholder="Email address" class="input-field" required>
+    <input type="password" id="auth-password" placeholder="Password" class="input-field" required>
+    
+    <div class="auth-buttons">
+        <button type="button" id="login-btn" class="btn btn-primary">Log In</button>
+        <button type="button" id="signup-btn" class="btn btn-secondary">Sign Up</button>
+        <button type="button" id="logout-btn" class="btn btn-secondary hidden">Log Out</button>
+    </div>
+    <p id="auth-user-status" class="auth-status-text"></p>
+</div>
+        </header>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
