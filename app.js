@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const total = QUESTIONS.length;
         const pct = Math.round(((index + 1) / total) * 100);
         progressBarFill.style.width = pct + '%';
-        progressText.textContent = `Question ${index + 1} of ${total} (${q.cat})`;
+        progressText.textContent = 'Question ${index + 1} of ${total} (${q.cat})';
 
         prevQBtn.disabled = index === 0;
         nextQBtn.textContent = (index === total - 1) ? 'Generate My Schedule ✨' : 'Next Question \u2192';
