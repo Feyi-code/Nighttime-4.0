@@ -1,17 +1,9 @@
-async function syncScheduleToCloud() {
-    if (!supabase) return;
-
-    const { data, error } = await supabase
-        .from('schedules')
-        .upsert({
-            user_id: state.answers['q13'] || 'guest',
-            routine_level: state.routineLevel,
-            schedule_items: state.scheduleItems,
-            updated_at: new Date().toISOString()
-        });
-
-    if (error) console.error('Supabase Sync Error:', error.message);
-}
+```javascript
+/**
+ * SLUMBERSPACE — Core Application Architecture & State Management
+ * Pure Vanilla JS handling 24-question wizard, paced generation, timeline customizations,
+ * file parser, wind-down timer, Web Audio noise/chimes, and localStorage persistence.
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -51,6 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'q23', cat: 'Lifestyle', label: '23. Which calming activity sounds most enjoyable for winding down?', type: 'select', options: ['Reading a physical book', 'Listening to music / audiobooks', 'Journaling / brain dump', 'Gentle stretching / breathing'] },
         { id: 'q24', cat: 'Lifestyle', label: '24. How much time would you realistically spend winding down?', type: 'select', options: ['15 minutes', '30 minutes', '45 minutes', '60 minutes'] }
     ];
+
+    // Supabase Configuration Credentials
+    const SUPABASE_URL = 'https://phkxgatgwkmnkwbqayeb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_10qfUn7zMKPQ5tAXlK6IKw_Rx5GW_72';
+
+    // Initialize Supabase Client (if CDN script is present in index.html)
+    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     const LOCAL_STORAGE_KEY = 'slumberspace_state_v3';
 
@@ -673,3 +672,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
+```
