@@ -1,8 +1,17 @@
-/**
- * SLUMBERSPACE — Core Application Architecture & State Management
- * Pure Vanilla JS handling 24-question wizard, paced generation, timeline customizations,
- * file parser, wind-down timer, Web Audio noise/chimes, and localStorage persistence.
- */
+async function syncScheduleToCloud() {
+    if (!supabase) return;
+
+    const { data, error } = await supabase
+        .from('schedules')
+        .upsert({
+            user_id: state.answers['q13'] || 'guest',
+            routine_level: state.routineLevel,
+            schedule_items: state.scheduleItems,
+            updated_at: new Date().toISOString()
+        });
+
+    if (error) console.error('Supabase Sync Error:', error.message);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
 
