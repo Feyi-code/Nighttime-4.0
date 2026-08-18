@@ -5,7 +5,71 @@
  * file parser, wind-down timer, Web Audio noise/chimes, and localStorage persistence.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {// --- Supabase Authentication Functions ---
+
+// 1. Sign Up New User
+async function signUpUser(email, password) {
+    if (!supabase) return alert("Supabase client is not initialized.");
+    
+    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+        alert(`Sign Up Failed: ${error.message}`);
+    } else {
+        alert("Sign-up successful! Please check your email for a confirmation link.");
+    }
+}
+
+// 2. Log In Existing User
+async function loginUser(email, password) {
+    if (!supabase) return alert("Supabase client is not initialized.");
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        alert(`Login Failed: ${error.message}`);
+    } else {
+        alert("Logged in successfully!");
+    }
+}
+
+// 3. Log Out Current User
+async function logoutUser() {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signOut();
+    if (error) alert(`Logout Failed: ${error.message}`);
+}
+
+// 4. Auth State Change Listener (Auto-updates UI and state)
+function initAuthListener() {
+    if (!supabase) return;
+
+    supabase.auth.onAuthStateChange((event, session) => {
+        const statusElem = document.getElementById('auth-user-status');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        if (session && session.user) {
+            // User is logged in
+            if (statusElem) statusElem.textContent = `Logged in as: ${session.user.email}`;
+            if (loginBtn) loginBtn.classList.add('hidden');
+            if (signupBtn) signupBtn.classList.add('hidden');
+            if (logoutBtn) logoutBtn.classList.remove('hidden');
+            
+            // Optionally link user ID to local state
+            state.userId = session.user.id;
+        } else {
+            // User is logged out
+            if (statusElem) statusElem.textContent = "Not logged in";
+            if (loginBtn) loginBtn.classList.remove('hidden');
+            if (signupBtn) signupBtn.classList.remove('hidden');
+            if (logoutBtn) logoutBtn.classList.add('hidden');
+            
+            state.userId = null;
+        }
+    });
+}
 
     // 24 Question Master Dataset
     const QUESTIONS = [
@@ -670,7 +734,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function escapeHtml(str) {
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
-
+// --- EventListeners ---
+function setupEventListeners() {
+    // Add button  event listeners here
+}
 });
 
 ```
