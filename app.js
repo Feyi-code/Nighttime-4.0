@@ -140,6 +140,7 @@ function initAuthListener() {
 
     // Element References
     const views = {
+        auth: document.getElementById('auth-view'),
         quiz: document.getElementById('questionnaire-view'),
         transition: document.getElementById('transition-view'),
         schedule: document.getElementById('schedule-view'),
