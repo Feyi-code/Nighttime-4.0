@@ -737,8 +737,75 @@ function initAuthListener() {
     }
 // --- EventListeners ---
 function setupEventListeners() {
-    // Add button  event listeners here
+// --- Supabase Authentication Handlers ---
+const loginBtn = document.getElementById('login-btn');
+const signupBtn = document.getElementById('signup-btn');
+const statusMsg = document.getElementById('auth-status-msg');
+
+// Sign Up Handler
+if (signupBtn) {
+    signupBtn.addEventListener('click', async () => {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+
+        if (!email || !password) {
+            if (statusMsg) statusMsg.textContent = "Please enter both email and password.";
+            return;
+        }
+
+        if (statusMsg) statusMsg.textContent = "Creating account...";
+
+        const { data, error } = await supabase.auth.signUp({ email, password });
+
+        if (error) {
+            if (statusMsg) statusMsg.textContent = `Sign Up Error: ${error.message}`;
+        } else if (data.user && !data.session) {
+            if (statusMsg) statusMsg.textContent = "Account created! Please check your email to confirm registration.";
+        } else {
+            if (statusMsg) statusMsg.textContent = "Success! Redirecting...";
+            switchView('quiz');
+            renderQuestion(0);
+        }
+    });
 }
+
+// Log In Handler
+if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+
+        if (!email || !password) {
+            if (statusMsg) statusMsg.textContent = "Please enter both email and password.";
+            return;
+        }
+
+        if (statusMsg) statusMsg.textContent = "Logging in...";
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            if (statusMsg) statusMsg.textContent = `Login Error: ${error.message}`;
+        } else {
+            if (statusMsg) statusMsg.textContent = "Logged in!";
+            switchView('quiz');
+            renderQuestion(0);
+        }
+    });
+}
+
+// Automatic Session Listener (Auto-logs in returned users)
+if (supabase) {
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (session && session.user) {
+            // User is logged in -> show questionnaire
+            switchView('quiz');
+        } else {
+            // User is logged out -> show auth view
+            switchView('auth');
+        }
+    });
+}}
 });
 
 ```
