@@ -14,7 +14,7 @@ async function signUpUser(email, password) {
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-        alert(`Sign Up Failed: ${error.message}`);
+        alert('Sign Up' Failed: ${error.message}`);
     } else {
         alert("Sign-up successful! Please check your email for a confirmation link.");
     }
