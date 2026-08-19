@@ -1,4 +1,4 @@
-```javascript
+'''javascript
 /**
  * SLUMBERSPACE — Core Application Architecture & State Management
  * Pure Vanilla JS handling 24-question wizard, paced generation, timeline customizations,
@@ -27,7 +27,7 @@ async function loginUser(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-        alert(`Login Failed: ${error.message}`);
+        alert('Login Failed: ${error.message}');
     } else {
         alert("Logged in successfully!");
     }
@@ -37,7 +37,7 @@ async function loginUser(email, password) {
 async function logoutUser() {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
-    if (error) alert(`Logout Failed: ${error.message}`);
+    if (error) alert('Logout Failed: ${error.message}');
 }
 
 // 4. Auth State Change Listener (Auto-updates UI and state)
@@ -52,7 +52,7 @@ function initAuthListener() {
 
         if (session && session.user) {
             // User is logged in
-            if (statusElem) statusElem.textContent = `Logged in as: ${session.user.email}`;
+            if (statusElem) statusElem.textContent = 'Logged in as: ${session.user.email}';
             if (loginBtn) loginBtn.classList.add('hidden');
             if (signupBtn) signupBtn.classList.add('hidden');
             if (logoutBtn) logoutBtn.classList.remove('hidden');
