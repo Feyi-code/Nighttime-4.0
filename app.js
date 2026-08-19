@@ -1,75 +1,76 @@
-'''javascript
 /**
  * SLUMBERSPACE — Core Application Architecture & State Management
  * Pure Vanilla JS handling 24-question wizard, paced generation, timeline customizations,
  * file parser, wind-down timer, Web Audio noise/chimes, and localStorage persistence.
  */
 
-document.addEventListener('DOMContentLoaded', () => {// --- Supabase Authentication Functions ---
+document.addEventListener('DOMContentLoaded', () => {
 
-// 1. Sign Up New User
-async function signUpUser(email, password) {
-    if (!supabase) return alert("Supabase client is not initialized.");
-    
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // --- Supabase Authentication Functions ---
 
-    if (error) {
-       alert('Sign Up Failed: ${error.message}');
-    } else {
-        alert("Sign-up successful! Please check your email for a confirmation link.");
-    }
-}
+    // 1. Sign Up New User
+    async function signUpUser(email, password) {
+        if (!supabase) return alert("Supabase client is not initialized.");
+        
+        const { data, error } = await supabase.auth.signUp({ email, password });
 
-// 2. Log In Existing User
-async function loginUser(email, password) {
-    if (!supabase) return alert("Supabase client is not initialized.");
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-        alert('Login Failed: ${error.message}');
-    } else {
-        alert("Logged in successfully!");
-    }
-}
-
-// 3. Log Out Current User
-async function logoutUser() {
-    if (!supabase) return;
-    const { error } = await supabase.auth.signOut();
-    if (error) alert('Logout Failed: ${error.message}');
-}
-
-// 4. Auth State Change Listener (Auto-updates UI and state)
-function initAuthListener() {
-    if (!supabase) return;
-
-    supabase.auth.onAuthStateChange((event, session) => {
-        const statusElem = document.getElementById('auth-user-status');
-        const loginBtn = document.getElementById('login-btn');
-        const signupBtn = document.getElementById('signup-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        if (session && session.user) {
-            // User is logged in
-            if (statusElem) statusElem.textContent = 'Logged in as: ${session.user.email}';
-            if (loginBtn) loginBtn.classList.add('hidden');
-            if (signupBtn) signupBtn.classList.add('hidden');
-            if (logoutBtn) logoutBtn.classList.remove('hidden');
-            
-            // Optionally link user ID to local state
-            state.userId = session.user.id;
+        if (error) {
+            alert(`Sign Up Failed: ${error.message}`);
         } else {
-            // User is logged out
-            if (statusElem) statusElem.textContent = "Not logged in";
-            if (loginBtn) loginBtn.classList.remove('hidden');
-            if (signupBtn) signupBtn.classList.remove('hidden');
-            if (logoutBtn) logoutBtn.classList.add('hidden');
-            
-            state.userId = null;
+            alert("Sign-up successful! Please check your email for a confirmation link.");
         }
-    });
-}
+    }
+
+    // 2. Log In Existing User
+    async function loginUser(email, password) {
+        if (!supabase) return alert("Supabase client is not initialized.");
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            alert(`Login Failed: ${error.message}`);
+        } else {
+            alert("Logged in successfully!");
+        }
+    }
+
+    // 3. Log Out Current User
+    async function logoutUser() {
+        if (!supabase) return;
+        const { error } = await supabase.auth.signOut();
+        if (error) alert(`Logout Failed: ${error.message}`);
+    }
+
+    // 4. Auth State Change Listener (Auto-updates UI and state)
+    function initAuthListener() {
+        if (!supabase) return;
+
+        supabase.auth.onAuthStateChange((event, session) => {
+            const statusElem = document.getElementById('auth-user-status');
+            const loginBtn = document.getElementById('login-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (session && session.user) {
+                // User is logged in
+                if (statusElem) statusElem.textContent = `Logged in as: ${session.user.email}`;
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (signupBtn) signupBtn.classList.add('hidden');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                
+                // Optionally link user ID to local state
+                state.userId = session.user.id;
+            } else {
+                // User is logged out
+                if (statusElem) statusElem.textContent = "Not logged in";
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (signupBtn) signupBtn.classList.remove('hidden');
+                if (logoutBtn) logoutBtn.classList.add('hidden');
+                
+                state.userId = null;
+            }
+        });
+    }
 
     // 24 Question Master Dataset
     const QUESTIONS = [
@@ -165,6 +166,7 @@ function initAuthListener() {
     init();
 
     function init() {
+        initAuthListener();
         const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (saved) {
             try {
@@ -188,19 +190,17 @@ function initAuthListener() {
     function renderQuestion(index) {
         state.currentQIndex = index;
         const q = QUESTIONS[index];
+        if (!q || !qContainer) return;
 
         const total = QUESTIONS.length;
         const pct = Math.round(((index + 1) / total) * 100);
-        progressBarFill.style.width = pct + '%';
-        progressText.textContent = 'Question ${index + 1} of ${total} (${q.cat})';
+        if (progressBarFill) progressBarFill.style.width = pct + '%';
+        if (progressText) progressText.textContent = `Question ${index + 1} of ${total} (${q.cat})`;
 
-        prevQBtn.disabled = index === 0;
-        nextQBtn.textContent = (index === total - 1) ? 'Generate My Schedule ✨' : 'Next Question \u2192';
+        if (prevQBtn) prevQBtn.disabled = index === 0;
+        if (nextQBtn) nextQBtn.textContent = (index === total - 1) ? 'Generate My Schedule ✨' : 'Next Question \u2192';
 
-        let html = `
-            <label class="q-label" for="q-input-${q.id}">${q.label}</label>
-        `;
-
+        let html = `<label class="q-label" for="q-input-${q.id}">${q.label}</label>`;
         const savedValue = state.answers[q.id] || q.default || '';
 
         if (q.type === 'time') {
@@ -237,6 +237,8 @@ function initAuthListener() {
 
     function saveCurrentQuestionAnswer() {
         const q = QUESTIONS[state.currentQIndex];
+        if (!q || !qContainer) return;
+
         if (q.type === 'time') {
             const input = document.getElementById(`q-input-${q.id}`);
             if (input) state.answers[q.id] = input.value;
@@ -248,33 +250,44 @@ function initAuthListener() {
 
     // Event Handling
     function setupEventListeners() {
-        prevQBtn.addEventListener('click', () => {
-            saveCurrentQuestionAnswer();
-            if (state.currentQIndex > 0) renderQuestion(state.currentQIndex - 1);
-        });
+        if (prevQBtn) {
+            prevQBtn.addEventListener('click', () => {
+                saveCurrentQuestionAnswer();
+                if (state.currentQIndex > 0) renderQuestion(state.currentQIndex - 1);
+            });
+        }
 
-        nextQBtn.addEventListener('click', () => {
-            saveCurrentQuestionAnswer();
-            if (state.currentQIndex < QUESTIONS.length - 1) {
-                renderQuestion(state.currentQIndex + 1);
-            } else {
-                startPacedGeneration();
-            }
-        });
+        if (nextQBtn) {
+            nextQBtn.addEventListener('click', () => {
+                saveCurrentQuestionAnswer();
+                if (state.currentQIndex < QUESTIONS.length - 1) {
+                    renderQuestion(state.currentQIndex + 1);
+                } else {
+                    startPacedGeneration();
+                }
+            });
+        }
 
         // Toolbar Toggle
-        document.getElementById('toggle-toolbar-btn').addEventListener('click', (e) => {
-            const body = document.getElementById('toolbar-body');
-            const hidden = body.classList.toggle('hidden');
-            e.target.setAttribute('aria-expanded', !hidden);
-        });
+        const toggleBtn = document.getElementById('toggle-toolbar-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                const body = document.getElementById('toolbar-body');
+                if (body) {
+                    const hidden = body.classList.toggle('hidden');
+                    e.target.setAttribute('aria-expanded', !hidden);
+                }
+            });
+        }
 
         // Theme & Color Selectors
-        themeSelect.addEventListener('change', (e) => {
-            state.theme = e.target.value;
-            applyAppearance();
-            saveState();
-        });
+        if (themeSelect) {
+            themeSelect.addEventListener('change', (e) => {
+                state.theme = e.target.value;
+                applyAppearance();
+                saveState();
+            });
+        }
 
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', () => {
@@ -286,58 +299,66 @@ function initAuthListener() {
             });
         });
 
-        emojiToggle.addEventListener('click', () => {
-            state.showEmojis = !state.showEmojis;
-            emojiToggle.textContent = state.showEmojis ? 'Show Emojis' : 'Hide Emojis';
-            emojiToggle.setAttribute('aria-pressed', state.showEmojis);
-            applyAppearance();
-            saveState();
-        });
+        if (emojiToggle) {
+            emojiToggle.addEventListener('click', () => {
+                state.showEmojis = !state.showEmojis;
+                emojiToggle.textContent = state.showEmojis ? 'Show Emojis' : 'Hide Emojis';
+                emojiToggle.setAttribute('aria-pressed', state.showEmojis);
+                applyAppearance();
+                saveState();
+            });
+        }
 
-        routineLevelSelect.addEventListener('change', (e) => {
-            state.routineLevel = e.target.value;
-            generateScheduleFromAnswers();
-            renderScheduleDashboard();
-            saveState();
-        });
+        if (routineLevelSelect) {
+            routineLevelSelect.addEventListener('change', (e) => {
+                state.routineLevel = e.target.value;
+                generateScheduleFromAnswers();
+                renderScheduleDashboard();
+                saveState();
+            });
+        }
 
         // Add Step Form
-        document.getElementById('add-step-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const emoji = document.getElementById('new-emoji-select').value;
-            const timeRaw = document.getElementById('new-step-time').value;
-            const text = document.getElementById('new-step-text').value.trim();
+        const addStepForm = document.getElementById('add-step-form');
+        if (addStepForm) {
+            addStepForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const emoji = document.getElementById('new-emoji-select')?.value || '📌';
+                const timeRaw = document.getElementById('new-step-time')?.value || '22:00';
+                const textInput = document.getElementById('new-step-text');
+                const text = textInput ? textInput.value.trim() : '';
 
-            if (!text) return;
+                if (!text) return;
 
-            state.scheduleItems.push({
-                id: Date.now(),
-                time: formatTimeStr(timeRaw),
-                timeRaw: timeRaw,
-                emoji: emoji,
-                text: text,
-                completed: false
+                state.scheduleItems.push({
+                    id: Date.now(),
+                    time: formatTimeStr(timeRaw),
+                    timeRaw: timeRaw,
+                    emoji: emoji,
+                    text: text,
+                    completed: false
+                });
+
+                state.scheduleItems.sort((a, b) => (a.timeRaw || '').localeCompare(b.timeRaw || ''));
+
+                if (textInput) textInput.value = '';
+                renderScheduleDashboard();
+                saveState();
             });
-
-            state.scheduleItems.sort((a, b) => (a.timeRaw || '').localeCompare(b.timeRaw || ''));
-
-            document.getElementById('new-step-text').value = '';
-            renderScheduleDashboard();
-            saveState();
-        });
+        }
 
         // Upload File Setup
         setupFileUpload();
 
         // Wind-Down & Alarm Buttons
-        document.getElementById('start-winddown-btn').addEventListener('click', () => startWindDown(5 * 60));
-        document.getElementById('dev-quick-test-btn').addEventListener('click', () => startWindDown(5)); // 5 second test
-        document.getElementById('cancel-winddown-btn').addEventListener('click', stopWindDown);
-        document.getElementById('emergency-exit-btn').addEventListener('click', exitSleepMode);
-        document.getElementById('stop-alarm-btn').addEventListener('click', stopAlarm);
-        document.getElementById('toggle-sound-btn').addEventListener('click', toggleMuteSound);
+        document.getElementById('start-winddown-btn')?.addEventListener('click', () => startWindDown(5 * 60));
+        document.getElementById('dev-quick-test-btn')?.addEventListener('click', () => startWindDown(5));
+        document.getElementById('cancel-winddown-btn')?.addEventListener('click', stopWindDown);
+        document.getElementById('emergency-exit-btn')?.addEventListener('click', exitSleepMode);
+        document.getElementById('stop-alarm-btn')?.addEventListener('click', stopAlarm);
+        document.getElementById('toggle-sound-btn')?.addEventListener('click', toggleMuteSound);
 
-        document.getElementById('retake-quiz-btn').addEventListener('click', () => {
+        document.getElementById('retake-quiz-btn')?.addEventListener('click', () => {
             if (confirm('Retake the questionnaire and reset your schedule?')) {
                 localStorage.removeItem(LOCAL_STORAGE_KEY);
                 state.answers = {};
@@ -364,8 +385,8 @@ function initAuthListener() {
         const interval = setInterval(() => {
             idx++;
             if (idx < steps.length) {
-                heading.textContent = steps[idx].h;
-                status.textContent = steps[idx].s;
+                if (heading) heading.textContent = steps[idx].h;
+                if (status) status.textContent = steps[idx].s;
             } else {
                 clearInterval(interval);
                 generateScheduleFromAnswers();
@@ -426,10 +447,15 @@ function initAuthListener() {
 
     // Dashboard UI Rendering
     function renderScheduleDashboard() {
-        document.getElementById('display-wind-down').textContent = state.calculatedTimes.windDown;
-        document.getElementById('display-bedtime').textContent = state.calculatedTimes.bedtime;
-        document.getElementById('display-wake-time').textContent = state.calculatedTimes.wake;
+        const windDownElem = document.getElementById('display-wind-down');
+        const bedtimeElem = document.getElementById('display-bedtime');
+        const wakeElem = document.getElementById('display-wake-time');
 
+        if (windDownElem) windDownElem.textContent = state.calculatedTimes.windDown;
+        if (bedtimeElem) bedtimeElem.textContent = state.calculatedTimes.bedtime;
+        if (wakeElem) wakeElem.textContent = state.calculatedTimes.wake;
+
+        if (!scheduleBullets) return;
         scheduleBullets.innerHTML = '';
 
         state.scheduleItems.forEach(item => {
@@ -450,21 +476,21 @@ function initAuthListener() {
             `;
 
             // Checkbox event
-            li.querySelector('.bullet-checkbox').addEventListener('change', (e) => {
+            li.querySelector('.bullet-checkbox')?.addEventListener('change', (e) => {
                 item.completed = e.target.checked;
                 li.classList.toggle('completed', item.completed);
                 saveState();
             });
 
             // Delete event
-            li.querySelector('.delete-btn').addEventListener('click', () => {
+            li.querySelector('.delete-btn')?.addEventListener('click', () => {
                 state.scheduleItems = state.scheduleItems.filter(i => i.id !== item.id);
                 renderScheduleDashboard();
                 saveState();
             });
 
             // Edit inline event
-            li.querySelector('.edit-btn').addEventListener('click', () => {
+            li.querySelector('.edit-btn')?.addEventListener('click', () => {
                 makeItemEditable(li, item);
             });
 
@@ -474,21 +500,24 @@ function initAuthListener() {
 
     function makeItemEditable(liElem, item) {
         const textSpan = liElem.querySelector('.bullet-text');
+        if (!textSpan) return;
         const currentText = item.text;
         
         textSpan.innerHTML = `<input type="text" class="bullet-text-input" value="${escapeHtml(currentText)}">`;
         const input = textSpan.querySelector('input');
-        input.focus();
+        if (input) {
+            input.focus();
 
-        const saveEdit = () => {
-            const newText = input.value.trim() || currentText;
-            item.text = newText;
-            renderScheduleDashboard();
-            saveState();
-        };
+            const saveEdit = () => {
+                const newText = input.value.trim() || currentText;
+                item.text = newText;
+                renderScheduleDashboard();
+                saveState();
+            };
 
-        input.addEventListener('blur', saveEdit);
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveEdit(); });
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveEdit(); });
+        }
     }
 
     // Schedule Upload Drag & Drop Handling
@@ -496,6 +525,8 @@ function initAuthListener() {
         const dropZone = document.getElementById('upload-zone');
         const fileInput = document.getElementById('schedule-file');
         const display = document.getElementById('file-name-display');
+
+        if (!dropZone || !fileInput) return;
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); });
@@ -515,7 +546,7 @@ function initAuthListener() {
 
         function handleFile(file) {
             state.uploadedFile = file.name;
-            display.textContent = `Attached: ${file.name} (Schedule synced)`;
+            if (display) display.textContent = `Attached: ${file.name} (Schedule synced)`;
             
             const reader = new FileReader();
             reader.onload = function(evt) {
@@ -527,7 +558,6 @@ function initAuthListener() {
     }
 
     function parseScheduleContent(content) {
-        // Quick parser looking for morning time patterns like 08:00 or 8:30
         const match = content.match(/\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b/);
         if (match) {
             state.answers['q13'] = match[0];
@@ -544,7 +574,7 @@ function initAuthListener() {
         const timerElem = document.getElementById('winddown-timer-display');
         const breathingText = document.getElementById('breathing-text');
 
-        updateTimerDisplay(remaining, timerElem);
+        if (timerElem) updateTimerDisplay(remaining, timerElem);
 
         const prompts = [
             "Take a slow breath. You don't need to do anything else right now.",
@@ -556,12 +586,12 @@ function initAuthListener() {
 
         breathingTimer = setInterval(() => {
             pIdx = (pIdx + 1) % prompts.length;
-            breathingText.textContent = prompts[pIdx];
+            if (breathingText) breathingText.textContent = prompts[pIdx];
         }, 4000);
 
         winddownTimer = setInterval(() => {
             remaining--;
-            updateTimerDisplay(remaining, timerElem);
+            if (timerElem) updateTimerDisplay(remaining, timerElem);
 
             if (remaining <= 0) {
                 stopWindDown();
@@ -584,18 +614,18 @@ function initAuthListener() {
 
     // SLEEP MODE & WEB AUDIO NOISE GENERATOR
     function enterSleepMode() {
-        lockdownOverlay.classList.add('active');
+        if (lockdownOverlay) lockdownOverlay.classList.add('active');
         startWhiteNoise();
 
         const countdownElem = document.getElementById('lockdown-countdown');
-        let sleepSecs = 8 * 3600; // Default 8 hrs countdown simulation
+        let sleepSecs = 8 * 3600;
 
         countdownTimer = setInterval(() => {
             sleepSecs--;
             if (sleepSecs <= 0) {
                 clearInterval(countdownTimer);
                 triggerWakeAlarm();
-            } else {
+            } else if (countdownElem) {
                 const h = Math.floor(sleepSecs / 3600);
                 const m = Math.floor((sleepSecs % 3600) / 60);
                 const s = sleepSecs % 60;
@@ -608,7 +638,7 @@ function initAuthListener() {
         if (confirm('Exit Sleep Mode and return to main dashboard?')) {
             if (countdownTimer) clearInterval(countdownTimer);
             stopWhiteNoise();
-            lockdownOverlay.classList.remove('active');
+            if (lockdownOverlay) lockdownOverlay.classList.remove('active');
             switchView('schedule');
         }
     }
@@ -624,7 +654,6 @@ function initAuthListener() {
             let lastOut = 0.0;
             for (let i = 0; i < bufferSize; i++) {
                 const white = Math.random() * 2 - 1;
-                // Brown noise filter formula for deeper, warmer sleep sound
                 data[i] = (lastOut + (0.02 * white)) / 1.02;
                 lastOut = data[i];
                 data[i] *= 3.5; 
@@ -654,7 +683,7 @@ function initAuthListener() {
     function toggleMuteSound() {
         isMuted = !isMuted;
         const btn = document.getElementById('toggle-sound-btn');
-        btn.textContent = isMuted ? 'Unmute' : 'Mute';
+        if (btn) btn.textContent = isMuted ? 'Unmute' : 'Mute';
         stopWhiteNoise();
         if (!isMuted) startWhiteNoise();
     }
@@ -662,15 +691,15 @@ function initAuthListener() {
     // WAKE-UP ALARM EXPERIENCE
     function triggerWakeAlarm() {
         stopWhiteNoise();
-        lockdownOverlay.classList.remove('active');
-        alarmOverlay.classList.add('active');
+        if (lockdownOverlay) lockdownOverlay.classList.remove('active');
+        if (alarmOverlay) alarmOverlay.classList.add('active');
 
         playGentleAlarmChime();
     }
 
     function playGentleAlarmChime() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const notes = [261.63, 329.63, 392.00, 523.25]; // C major gentle chord
+        const notes = [261.63, 329.63, 392.00, 523.25];
         const now = audioCtx.currentTime;
 
         notes.forEach((freq, i) => {
@@ -687,21 +716,23 @@ function initAuthListener() {
     }
 
     function stopAlarm() {
-        alarmOverlay.classList.remove('active');
+        if (alarmOverlay) alarmOverlay.classList.remove('active');
         switchView('schedule');
     }
 
     // Helper Functions
     function switchView(viewKey) {
-        Object.keys(views).forEach(k => views[k].classList.remove('active'));
+        Object.keys(views).forEach(k => {
+            if (views[k]) views[k].classList.remove('active');
+        });
         if (views[viewKey]) views[viewKey].classList.add('active');
     }
 
     function applyAppearance() {
         document.body.setAttribute('data-theme', state.theme);
         document.body.setAttribute('data-accent', state.accent);
-        themeSelect.value = state.theme;
-        routineLevelSelect.value = state.routineLevel;
+        if (themeSelect) themeSelect.value = state.theme;
+        if (routineLevelSelect) routineLevelSelect.value = state.routineLevel;
         document.body.classList.toggle('hide-emojis', !state.showEmojis);
     }
 
@@ -721,91 +752,28 @@ function initAuthListener() {
         const [h, m] = time24.split(':').map(Number);
         const ampm = h >= 12 ? 'PM' : 'AM';
         const h12 = (h % 12) || 12;
-        return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
+        const minStr = m.toString().padStart(2, '0');
+        return `${h12}:${minStr} ${ampm}`;
     }
 
     function formatTime(dateObj) {
         let h = dateObj.getHours();
         let m = dateObj.getMinutes();
         const ampm = h >= 12 ? 'PM' : 'AM';
-        h = (h % 12) || 12;
-        return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+        h = h % 12 || 12;
+        const minStr = m.toString().padStart(2, '0');
+        return `${h}:${minStr} ${ampm}`;
     }
 
     function escapeHtml(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, (m) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[m]));
     }
-// --- EventListeners ---
-function setupEventListeners() {
-// --- Supabase Authentication Handlers ---
-const loginBtn = document.getElementById('login-btn');
-const signupBtn = document.getElementById('signup-btn');
-const statusMsg = document.getElementById('auth-status-msg');
 
-// Sign Up Handler
-if (signupBtn) {
-    signupBtn.addEventListener('click', async () => {
-        const email = document.getElementById('auth-email').value.trim();
-        const password = document.getElementById('auth-password').value;
-
-        if (!email || !password) {
-            if (statusMsg) statusMsg.textContent = "Please enter both email and password.";
-            return;
-        }
-
-        if (statusMsg) statusMsg.textContent = "Creating account...";
-
-        const { data, error } = await supabase.auth.signUp({ email, password });
-
-        if (error) {
-            if (statusMsg) statusMsg.textContent = `Sign Up Error: ${error.message}`;
-        } else if (data.user && !data.session) {
-            if (statusMsg) statusMsg.textContent = "Account created! Please check your email to confirm registration.";
-        } else {
-            if (statusMsg) statusMsg.textContent = "Success! Redirecting...";
-            switchView('quiz');
-            renderQuestion(0);
-        }
-    });
-}
-
-// Log In Handler
-if (loginBtn) {
-    loginBtn.addEventListener('click', async () => {
-        const email = document.getElementById('auth-email').value.trim();
-        const password = document.getElementById('auth-password').value;
-
-        if (!email || !password) {
-            if (statusMsg) statusMsg.textContent = "Please enter both email and password.";
-            return;
-        }
-
-        if (statusMsg) statusMsg.textContent = "Logging in...";
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (error) {
-            if (statusMsg) statusMsg.textContent = `Login Error: ${error.message}`;
-        } else {
-            if (statusMsg) statusMsg.textContent = "Logged in!";
-            switchView('quiz');
-            renderQuestion(0);
-        }
-    });
-}
-
-// Automatic Session Listener (Auto-logs in returned users)
-if (supabase) {
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (session && session.user) {
-            // User is logged in -> show questionnaire
-            switchView('quiz');
-        } else {
-            // User is logged out -> show auth view
-            switchView('auth');
-        }
-    });
-}}
 });
-
-```
